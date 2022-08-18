@@ -98,6 +98,7 @@ module Gruf
       controllers_path: '',
       services: [],
       logger: nil,
+      reloading: nil,
       grpc_logger: nil,
       error_metadata_key: :'error-internal-bin',
       error_serializer: nil,
@@ -186,6 +187,13 @@ module Gruf
         connect_md_proc: nil,
         server_args: {}
       }
+      if reloading.nil? && defined?(::Rails)
+        ::Gruf::Integrations::Rails::Railtie.config.before_initialize do |app|
+          if reloading.nil?
+            self.reloading = !app.config.cache_classes
+          end
+        end
+      end
       if use_default_interceptors
         interceptors.use(::Gruf::Interceptors::ActiveRecord::ConnectionReset)
         interceptors.use(::Gruf::Interceptors::Instrumentation::OutputMetadataTimer)
@@ -199,6 +207,14 @@ module Gruf
     #
     def development?
       environment == 'development'
+    end
+
+    def reloading?
+      if reloading.nil?
+        development?
+      else
+        reloading
+      end
     end
 
     private

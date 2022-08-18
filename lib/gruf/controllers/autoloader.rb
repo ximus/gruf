@@ -39,7 +39,7 @@ module Gruf
         @loader = ::Zeitwerk::Loader.new
         @loader.tag = tag || 'gruf-controllers'
         @setup = false
-        @reloading_enabled = reloading || ::Gruf.development?
+        @reloading_enabled = reloading.nil? ? ::Gruf.reloading? : reloading
         setup!
       end
 
